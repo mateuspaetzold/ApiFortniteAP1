@@ -10,6 +10,7 @@
 ## Como executar
 ```bash
 dotnet run --urls http://localhost:5050
+```
 
 ## Vídeo de demonstração
 https://youtu.be/Z6_EZq_dJgw
