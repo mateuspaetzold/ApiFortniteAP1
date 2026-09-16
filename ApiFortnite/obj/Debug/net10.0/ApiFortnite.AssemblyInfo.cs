@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ApiFortnite")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c3c84f950fd94ead1eed4b9c1ebf8a37b39ad5e8")]
 [assembly: System.Reflection.AssemblyProductAttribute("ApiFortnite")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ApiFortnite")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

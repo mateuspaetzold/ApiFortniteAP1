@@ -26,3 +26,4 @@ C:\Users\flage\Downloads\ApiFortniteAP1\ApiFortnite\obj\Debug\net10.0\refint\Api
 C:\Users\flage\Downloads\ApiFortniteAP1\ApiFortnite\obj\Debug\net10.0\ApiFortnite.pdb
 C:\Users\flage\Downloads\ApiFortniteAP1\ApiFortnite\obj\Debug\net10.0\ApiFortnite.genruntimeconfig.cache
 C:\Users\flage\Downloads\ApiFortniteAP1\ApiFortnite\obj\Debug\net10.0\ref\ApiFortnite.dll
+C:\Users\flage\Downloads\ApiFortniteAP1\ApiFortnite\obj\Debug\net10.0\ApiFortnite.sourcelink.json
