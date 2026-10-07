@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fortnite Itens - Demonstração Frontend</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-titles">
+        <span class="tag-demonstracao">MODO DEMONSTRAÇÃO</span>
+        <h1>Inventário Fortnite - Demonstração Visual</h1>
+        <p class="subtitle">Interface visual com dados simulados em memória (sem conexão com a API do backend).</p>
+      </div>
+      <div class="header-badge" aria-label="Indicador de status da conexão">
+        <span class="status-indicator"></span>
+        <span>Dados Fictícios Locais</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-container">
+    <!-- Aviso de Demonstração -->
+    <aside class="demo-alert" role="region" aria-label="Aviso sobre os dados simulados">
+      <div class="alert-icon" aria-hidden="true">&#9888;</div>
+      <div class="alert-content">
+        <strong>Atenção:</strong> Esta interface utiliza exclusivamente dados fictícios locais (Vanilla JS). Nenhuma requisição de rede ou persistência externa está sendo realizada.
+      </div>
+    </aside>
+
+    <!-- Notificações do Sistema -->
+    <div id="mensagem-status" class="status-message hidden" role="status" aria-live="polite"></div>
+
+    <div class="grid-layout">
+      <!-- Seção do Formulário -->
+      <section class="card form-section" aria-labelledby="form-heading">
+        <div class="card-header">
+          <h2 id="form-heading">Gerenciar Item</h2>
+          <span id="modo-operacao" class="modo-badge">Novo Item</span>
+        </div>
+
+        <form id="item-form" novalidate>
+          <input type="hidden" id="item-id" name="item-id" value="">
+
+          <div class="form-group">
+            <label for="item-nome">
+              Nome do Item <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="item-nome" 
+              name="item-nome" 
+              placeholder="Ex.: Scar Dourada, Escudo Potente" 
+              required
+              aria-describedby="item-nome-desc"
+            >
+            <small id="item-nome-desc" class="form-text">Informe o nome visível do item no jogo.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="item-tipo">
+              Tipo do Item <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="item-tipo" name="item-tipo" required aria-describedby="item-tipo-desc">
+              <option value="">Selecione um tipo...</option>
+              <option value="Arma">Arma</option>
+              <option value="Ferramenta">Ferramenta</option>
+              <option value="Consumível">Consumível</option>
+              <option value="Cosmético">Cosmético</option>
+              <option value="Outro">Outro</option>
+            </select>
+            <small id="item-tipo-desc" class="form-text">Classificação do item no inventário.</small>
+          </div>
+
+          <div class="form-group-checkbox">
+            <input type="checkbox" id="item-disponivel" name="item-disponivel" checked>
+            <label for="item-disponivel">Item Disponível (em rotação/ativo)</label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-salvar" class="btn btn-primary">
+              <span id="btn-salvar-texto">Adicionar Item</span>
+            </button>
+            <button type="button" id="btn-cancelar" class="btn btn-secondary">
+              Limpar Campos
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Seção da Lista de Itens -->
+      <section class="card list-section" aria-labelledby="list-heading">
+        <div class="card-header list-header">
+          <div>
+            <h2 id="list-heading">Lista de Itens do Inventário</h2>
+            <p class="section-subtitle">Exibição de itens cadastrados no inventário local de teste.</p>
+          </div>
+          <div class="stats-counter" aria-live="polite">
+            Total: <span id="total-itens" class="highlight-number">0</span> | Disponíveis: <span id="total-disponiveis" class="highlight-number">0</span>
+          </div>
+        </div>
+
+        <!-- Filtro Rápido -->
+        <div class="filter-bar">
+          <label for="filtro-busca" class="visually-hidden">Buscar itens por nome</label>
+          <input 
+            type="search" 
+            id="filtro-busca" 
+            placeholder="Filtrar itens por nome ou tipo..." 
+            aria-label="Filtrar itens por nome ou tipo"
+          >
+        </div>
+
+        <!-- Tabela Responsiva -->
+        <div class="table-container" tabindex="0" role="region" aria-label="Tabela de itens cadastrados">
+          <table class="items-table" id="tabela-itens">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 60px;">ID</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Disponibilidade</th>
+                <th scope="col" style="width: 210px; text-align: center;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="itens-tbody">
+              <!-- As linhas serão inseridas dinamicamente pelo JavaScript -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="empty-state" class="empty-state hidden">
+          <p>Nenhum item encontrado no inventário simulado.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Modal de Visualização de Detalhes -->
+    <div id="modal-detalhes" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-titulo">Detalhes do Item (Demonstração)</h3>
+          <button type="button" class="btn-close" id="btn-fechar-modal" aria-label="Fechar janela de detalhes">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-corpo">
+          <!-- Detalhes preenchidos via JS -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-modal-ok">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>Projeto de Demonstração - API Fortnite AP1 &bull; Interface 100% estática local em Vanilla HTML, CSS e JS.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
