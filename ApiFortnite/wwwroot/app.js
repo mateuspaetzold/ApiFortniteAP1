@@ -1,18 +1,11 @@
 /**
- * Interface de Demonstração - Fortnite AP1 (Vanilla JS)
- * Contexto: Apenas dados fictícios locais em memória.
- * NENHUMA CONEXÃO COM O BACKEND / API É REALIZADA.
+ * Interface do Inventário - Fortnite AP1 (Vanilla JS)
+ * Integração completa com a API backend (/api/itens).
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Dados fictícios locais simulados (Mock)
-  let itensMock = [
-    { id: 1, nome: "Picareta de Batalha", tipo: "Ferramenta", disponivel: true },
-    { id: 2, nome: "Escudo Potente", tipo: "Consumível", disponivel: true },
-    { id: 3, nome: "Rifle de Assalto Lendário (SCAR)", tipo: "Arma", disponivel: true },
-    { id: 4, nome: "Espingarda Pump Épica", tipo: "Arma", disponivel: false },
-    { id: 5, nome: "Asa-Delta Tubarão Laser", tipo: "Cosmético", disponivel: true }
-  ];
+  const API_URL = "/api/itens";
+  let itens = [];
 
   // Elementos do DOM
   const form = document.getElementById("item-form");
@@ -40,6 +33,21 @@ document.addEventListener("DOMContentLoaded", () => {
   let timeoutMensagem = null;
 
   /**
+   * Extrai a mensagem de erro retornada pela API ou usa uma mensagem padrão
+   */
+  async function extrairMensagemErro(response, mensagemPadrao) {
+    try {
+      const erroJson = await response.json();
+      if (erroJson && erroJson.mensagem) {
+        return erroJson.mensagem;
+      }
+    } catch (_) {
+      // Caso a resposta não seja JSON válido
+    }
+    return mensagemPadrao || `Erro na requisição (Status: ${response.status})`;
+  }
+
+  /**
    * Exibe mensagens de feedback para o usuário
    */
   function exibirMensagem(texto, tipo = "success") {
@@ -54,28 +62,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Atualiza contadores de itens
+   * Atualiza contadores de itens na interface
    */
   function atualizarEstatisticas() {
-    const total = itensMock.length;
-    const disponiveis = itensMock.filter(i => i.disponivel).length;
+    const total = itens.length;
+    const disponiveis = itens.filter(i => i.disponivel).length;
 
-    totalItensEl.textContent = total;
-    totalDisponiveisEl.textContent = disponiveis;
+    totalItensEl.textContent = String(total);
+    totalDisponiveisEl.textContent = String(disponiveis);
   }
 
   /**
-   * Renderiza a tabela de itens filtrada ou completa
+   * Renderiza a tabela de itens filtrada ou completa usando textContent
    */
   function renderizarTabela() {
     const termo = (filtroBusca.value || "").toLowerCase().trim();
 
-    const itensFiltrados = itensMock.filter(item => 
-      item.nome.toLowerCase().includes(termo) ||
-      item.tipo.toLowerCase().includes(termo)
+    const itensFiltrados = itens.filter(item => 
+      (item.nome && item.nome.toLowerCase().includes(termo)) ||
+      (item.tipo && item.tipo.toLowerCase().includes(termo))
     );
 
-    tbody.innerHTML = "";
+    // Limpeza segura sem innerHTML
+    tbody.textContent = "";
 
     if (itensFiltrados.length === 0) {
       emptyState.classList.remove("hidden");
@@ -152,31 +161,54 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Carrega um item no formulário para edição
+   * 1. GET - Busca todos os itens na API
    */
-  function carregarParaEdicao(id) {
-    const item = itensMock.find(i => i.id === id);
-    if (!item) {
-      exibirMensagem("Item não encontrado nos dados locais.", "danger");
-      return;
+  async function listarItens() {
+    try {
+      const response = await fetch(API_URL);
+      if (!response.ok) {
+        const msg = await extrairMensagemErro(response, "Erro ao carregar itens da API.");
+        throw new Error(msg);
+      }
+      itens = await response.json();
+      renderizarTabela();
+    } catch (error) {
+      exibirMensagem(error.message || "Falha na conexão com a API.", "danger");
     }
-
-    inputId.value = item.id;
-    inputNome.value = item.nome;
-    selectTipo.value = item.tipo;
-    checkboxDisponivel.checked = Boolean(item.disponivel);
-
-    modoBadge.textContent = `Editando #${item.id}`;
-    modoBadge.classList.add("edicao");
-    btnSalvarTexto.textContent = "Salvar Alterações";
-    btnCancelar.textContent = "Cancelar Edição";
-
-    inputNome.focus();
-    exibirMensagem(`Item "${item.nome}" carregado no formulário para edição.`, "info");
   }
 
   /**
-   * Reseta o formulário para inclusão de novo item
+   * 2. GET - Busca item por ID e preenche o formulário para edição
+   */
+  async function carregarParaEdicao(id) {
+    try {
+      const response = await fetch(`${API_URL}/${id}`);
+      if (!response.ok) {
+        const msg = await extrairMensagemErro(response, "Item não encontrado na API.");
+        throw new Error(msg);
+      }
+
+      const item = await response.json();
+
+      inputId.value = item.id;
+      inputNome.value = item.nome;
+      selectTipo.value = item.tipo;
+      checkboxDisponivel.checked = Boolean(item.disponivel);
+
+      modoBadge.textContent = `Editando #${item.id}`;
+      modoBadge.classList.add("edicao");
+      btnSalvarTexto.textContent = "Salvar Alterações";
+      btnCancelar.textContent = "Cancelar Edição";
+
+      inputNome.focus();
+      exibirMensagem(`Item "${item.nome}" carregado no formulário para edição.`, "info");
+    } catch (error) {
+      exibirMensagem(error.message || "Erro ao carregar item para edição.", "danger");
+    }
+  }
+
+  /**
+   * Reseta o formulário para criação de novo item
    */
   function resetarFormulario() {
     form.reset();
@@ -190,9 +222,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * Salva o item (criação ou edição simulada)
+   * 3. POST / 4. PUT - Salva o item (criação ou edição) na API
    */
-  function salvarItem(e) {
+  async function salvarItem(e) {
     e.preventDefault();
 
     const nome = inputNome.value.trim();
@@ -200,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const disponivel = checkboxDisponivel.checked;
     const idAtual = inputId.value ? parseInt(inputId.value, 10) : null;
 
-    // Validação básica
+    // Validação local no frontend
     if (!nome) {
       exibirMensagem("Por favor, preencha o nome do item.", "danger");
       inputNome.focus();
@@ -213,80 +245,144 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (idAtual) {
-      // Atualização
-      const index = itensMock.findIndex(i => i.id === idAtual);
-      if (index !== -1) {
-        itensMock[index] = { id: idAtual, nome, tipo, disponivel };
-        exibirMensagem(`Item "${nome}" atualizado com sucesso no inventário de demonstração!`, "success");
-      } else {
-        exibirMensagem("Não foi possível localizar o item para atualização.", "danger");
-      }
-    } else {
-      // Inclusão com ID sequencial simulado
-      const proximoId = itensMock.length > 0 ? Math.max(...itensMock.map(i => i.id)) + 1 : 1;
-      const novoItem = { id: proximoId, nome, tipo, disponivel };
-      itensMock.push(novoItem);
-      exibirMensagem(`Item "${nome}" adicionado com sucesso ao inventário de demonstração!`, "success");
-    }
+    const payload = { nome, tipo, disponivel };
 
-    resetarFormulario();
-    renderizarTabela();
+    try {
+      if (idAtual) {
+        // PUT /api/itens/{id}
+        const response = await fetch(`${API_URL}/${idAtual}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const msg = await extrairMensagemErro(response, "Erro ao atualizar item.");
+          throw new Error(msg);
+        }
+
+        const itemAtualizado = await response.json();
+        exibirMensagem(`Item "${itemAtualizado.nome}" atualizado com sucesso!`, "success");
+      } else {
+        // POST /api/itens
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const msg = await extrairMensagemErro(response, "Erro ao criar item.");
+          throw new Error(msg);
+        }
+
+        const itemCriado = await response.json();
+        exibirMensagem(`Item "${itemCriado.nome}" criado com sucesso!`, "success");
+      }
+
+      resetarFormulario();
+      await listarItens();
+    } catch (error) {
+      exibirMensagem(error.message || "Falha ao salvar o item.", "danger");
+    }
   }
 
   /**
-   * Remove um item da lista simulada
+   * 5. DELETE - Remove um item da API
    */
-  function deletarItem(id, nome) {
-    const confirmacao = window.confirm(`Deseja realmente remover o item "${nome}" (ID: ${id}) da demonstração?`);
+  async function deletarItem(id, nome) {
+    const confirmacao = window.confirm(`Deseja realmente excluir o item "${nome}" (ID: ${id})?`);
     if (!confirmacao) return;
 
-    const tamanhoInicial = itensMock.length;
-    itensMock = itensMock.filter(i => i.id !== id);
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE"
+      });
 
-    if (itensMock.length < tamanhoInicial) {
+      if (!response.ok) {
+        const msg = await extrairMensagemErro(response, "Erro ao excluir o item.");
+        throw new Error(msg);
+      }
+
       // Se estava editando o item excluído, reseta o formulário
       if (inputId.value === String(id)) {
         resetarFormulario();
       }
-      exibirMensagem(`Item "${nome}" removido do inventário de teste.`, "danger");
-      renderizarTabela();
+
+      exibirMensagem(`Item "${nome}" excluído com sucesso!`, "success");
+      await listarItens();
+    } catch (error) {
+      exibirMensagem(error.message || "Falha ao excluir o item.", "danger");
     }
   }
 
   /**
-   * Abre a janela modal com detalhes do item
+   * Abre a janela modal com detalhes do item obtidos da API (sem innerHTML)
    */
-  function abrirModalDetalhes(id) {
-    const item = itensMock.find(i => i.id === id);
-    if (!item) return;
+  async function abrirModalDetalhes(id) {
+    try {
+      const response = await fetch(`${API_URL}/${id}`);
+      if (!response.ok) {
+        const msg = await extrairMensagemErro(response, "Item não encontrado.");
+        throw new Error(msg);
+      }
 
-    modalCorpo.innerHTML = `
-      <div class="modal-detail-row">
-        <span class="modal-label">ID do Item:</span>
-        <span class="modal-value">#${item.id}</span>
-      </div>
-      <div class="modal-detail-row">
-        <span class="modal-label">Nome:</span>
-        <span class="modal-value">${item.nome}</span>
-      </div>
-      <div class="modal-detail-row">
-        <span class="modal-label">Tipo:</span>
-        <span class="modal-value">${item.tipo}</span>
-      </div>
-      <div class="modal-detail-row">
-        <span class="modal-label">Disponibilidade:</span>
-        <span class="modal-value" style="color: ${item.disponivel ? 'var(--status-success)' : 'var(--text-muted)'}; font-weight: bold;">
-          ${item.disponivel ? "Disponível para uso" : "Indisponível / No Cofre"}
-        </span>
-      </div>
-      <div class="modal-detail-row" style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-dim);">
-        <small>Registro puramente demonstrativo em memória local.</small>
-      </div>
-    `;
+      const item = await response.json();
 
-    modalDetalhes.classList.remove("hidden");
-    btnModalOk.focus();
+      // Limpeza segura sem innerHTML
+      modalCorpo.textContent = "";
+
+      function criarLinhaDetalhe(rotulo, valor, corDestaque = null) {
+        const row = document.createElement("div");
+        row.className = "modal-detail-row";
+
+        const label = document.createElement("span");
+        label.className = "modal-label";
+        label.textContent = rotulo;
+
+        const value = document.createElement("span");
+        value.className = "modal-value";
+        value.textContent = valor;
+        if (corDestaque) {
+          value.style.color = corDestaque;
+          value.style.fontWeight = "bold";
+        }
+
+        row.appendChild(label);
+        row.appendChild(value);
+        return row;
+      }
+
+      modalCorpo.appendChild(criarLinhaDetalhe("ID do Item:", `#${item.id}`));
+      modalCorpo.appendChild(criarLinhaDetalhe("Nome:", item.nome));
+      modalCorpo.appendChild(criarLinhaDetalhe("Tipo:", item.tipo));
+      modalCorpo.appendChild(
+        criarLinhaDetalhe(
+          "Disponibilidade:",
+          item.disponivel ? "Disponível para uso" : "Indisponível / No Cofre",
+          item.disponivel ? "var(--status-success)" : "var(--text-muted)"
+        )
+      );
+
+      const infoRow = document.createElement("div");
+      infoRow.className = "modal-detail-row";
+      infoRow.style.marginTop = "0.5rem";
+      infoRow.style.fontSize = "0.8rem";
+      infoRow.style.color = "var(--text-dim)";
+      const infoSmall = document.createElement("small");
+      infoSmall.textContent = "Registro sincronizado em tempo real com a API.";
+      infoRow.appendChild(infoSmall);
+      modalCorpo.appendChild(infoRow);
+
+      modalDetalhes.classList.remove("hidden");
+      btnModalOk.focus();
+    } catch (error) {
+      exibirMensagem(error.message || "Erro ao carregar detalhes do item.", "danger");
+    }
   }
 
   /**
@@ -315,6 +411,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Inicialização
-  renderizarTabela();
+  // Inicialização: carrega os dados reais da API
+  listarItens();
 });

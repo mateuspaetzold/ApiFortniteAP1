@@ -10,26 +10,18 @@
   <header class="app-header">
     <div class="header-container">
       <div class="header-titles">
-        <span class="tag-demonstracao">MODO DEMONSTRAÇÃO</span>
-        <h1>Inventário Fortnite - Demonstração Visual</h1>
-        <p class="subtitle">Interface visual com dados simulados em memória (sem conexão com a API do backend).</p>
+        <span class="tag-demonstracao">API CONECTADA</span>
+        <h1>Inventário Fortnite</h1>
+        <p class="subtitle">Interface integrada com a API do backend (/api/itens).</p>
       </div>
       <div class="header-badge" aria-label="Indicador de status da conexão">
         <span class="status-indicator"></span>
-        <span>Dados Fictícios Locais</span>
+        <span>Conexão Ativa com a API</span>
       </div>
     </div>
   </header>
 
   <main class="main-container">
-    <!-- Aviso de Demonstração -->
-    <aside class="demo-alert" role="region" aria-label="Aviso sobre os dados simulados">
-      <div class="alert-icon" aria-hidden="true">&#9888;</div>
-      <div class="alert-content">
-        <strong>Atenção:</strong> Esta interface utiliza exclusivamente dados fictícios locais (Vanilla JS). Nenhuma requisição de rede ou persistência externa está sendo realizada.
-      </div>
-    </aside>
-
     <!-- Notificações do Sistema -->
     <div id="mensagem-status" class="status-message hidden" role="status" aria-live="polite"></div>
 
@@ -95,7 +87,7 @@
         <div class="card-header list-header">
           <div>
             <h2 id="list-heading">Lista de Itens do Inventário</h2>
-            <p class="section-subtitle">Exibição de itens cadastrados no inventário local de teste.</p>
+            <p class="section-subtitle">Exibição de itens cadastrados no inventário.</p>
           </div>
           <div class="stats-counter" aria-live="polite">
             Total: <span id="total-itens" class="highlight-number">0</span> | Disponíveis: <span id="total-disponiveis" class="highlight-number">0</span>
@@ -132,7 +124,7 @@
         </div>
 
         <div id="empty-state" class="empty-state hidden">
-          <p>Nenhum item encontrado no inventário simulado.</p>
+          <p>Nenhum item encontrado no inventário.</p>
         </div>
       </section>
     </div>
@@ -141,7 +133,7 @@
     <div id="modal-detalhes" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
       <div class="modal-content">
         <div class="modal-header">
-          <h3 id="modal-titulo">Detalhes do Item (Demonstração)</h3>
+          <h3 id="modal-titulo">Detalhes do Item</h3>
           <button type="button" class="btn-close" id="btn-fechar-modal" aria-label="Fechar janela de detalhes">&times;</button>
         </div>
         <div class="modal-body" id="modal-corpo">
@@ -155,7 +147,7 @@
   </main>
 
   <footer class="app-footer">
-    <p>Projeto de Demonstração - API Fortnite AP1 &bull; Interface 100% estática local em Vanilla HTML, CSS e JS.</p>
+    <p>API Fortnite AP1 &bull; Interface integrada via Fetch API.</p>
   </footer>
 
   <script src="app.js"></script>
