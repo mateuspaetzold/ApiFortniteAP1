@@ -8,9 +8,25 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 
 var app = builder.Build();
 
+// Middleware de tratamento de exceções (Aula 14)
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            mensagem = "Ocorreu um erro interno. Tente novamente mais tarde."
+        });
+    });
+});
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.MapGet("/", () => "API de Itens do Fortnite está no ar!");
 
 app.MapGet("/api/itens", async (ApiDbContext db) =>
     await db.Itens.ToListAsync());
