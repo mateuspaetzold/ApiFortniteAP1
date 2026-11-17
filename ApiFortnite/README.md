@@ -59,10 +59,13 @@
 ```
 
 ## Estrutura do projeto
-- `Program.cs` — configuração, rotas, Model `ItemEntity` e `ApiDbContext`
-- `wwwroot/` — interface (HTML, CSS e JavaScript)
-- `bruno/` — Collection do Bruno com os testes das rotas
-- `Migrations/` — migrations do Entity Framework Core
+O código foi organizado separando as responsabilidades para facilitar a manutenção:
+- `Models/` — Contém a entidade `ItemEntity` (representação dos dados no banco).
+- `Dtos/` — Contém o `ItemEntrada` (dados recebidos nas requisições).
+- `Data/` — Contém o `ApiDbContext` (conexão com o banco SQLite).
+- `Program.cs` — Inicialização da API, middleware, configurações e rotas.
+- `wwwroot/` — Interface do usuário (HTML, CSS e JavaScript).
+- `Migrations/` — Histórico de criação e alterações do banco de dados.
 
 ## Testes com Bruno
 A Collection do Bruno está na pasta `bruno/` do projeto. Ela contém as requisições de GET da lista, GET por id, POST, PUT, DELETE e uma requisição extra para confirmar o 404 depois da exclusão.

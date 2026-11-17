@@ -1,3 +1,6 @@
+using ApiFortnite.Data;
+using ApiFortnite.Dtos;
+using ApiFortnite.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +39,7 @@ app.MapGet("/api/itens/{id:int}", async (int id, ApiDbContext db) =>
     return Results.Ok(item);
 });
 
-app.MapPost("/api/itens", async (ItemEntity dados, ApiDbContext db) =>
+app.MapPost("/api/itens", async (ItemEntrada dados, ApiDbContext db) =>
 {
     if (string.IsNullOrWhiteSpace(dados.Nome))
         return Results.BadRequest(new { mensagem = "O nome é obrigatório." });
@@ -44,12 +47,20 @@ app.MapPost("/api/itens", async (ItemEntity dados, ApiDbContext db) =>
     if (string.IsNullOrWhiteSpace(dados.Tipo))
         return Results.BadRequest(new { mensagem = "O tipo é obrigatório." });
 
-    db.Itens.Add(dados);
+    // Criando o item no banco a partir dos dados que vieram do DTO
+    var novoItem = new ItemEntity
+    {
+        Nome = dados.Nome,
+        Tipo = dados.Tipo,
+        Disponivel = dados.Disponivel
+    };
+
+    db.Itens.Add(novoItem);
     await db.SaveChangesAsync();
-    return Results.Created($"/api/itens/{dados.Id}", dados);
+    return Results.Created($"/api/itens/{novoItem.Id}", novoItem);
 });
 
-app.MapPut("/api/itens/{id:int}", async (int id, ItemEntity dados, ApiDbContext db) =>
+app.MapPut("/api/itens/{id:int}", async (int id, ItemEntrada dados, ApiDbContext db) =>
 {
     if (string.IsNullOrWhiteSpace(dados.Nome))
         return Results.BadRequest(new { mensagem = "O nome é obrigatório." });
@@ -79,18 +90,3 @@ app.MapDelete("/api/itens/{id:int}", async (int id, ApiDbContext db) =>
 });
 
 app.Run();
-
-class ItemEntity
-{
-    public int Id { get; set; }
-    public string Nome { get; set; } = string.Empty;
-    public string Tipo { get; set; } = string.Empty;
-    public bool Disponivel { get; set; }
-}
-
-class ApiDbContext : DbContext
-{
-    public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options) { }
-
-    public DbSet<ItemEntity> Itens => Set<ItemEntity>();
-}
