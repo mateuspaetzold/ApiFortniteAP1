@@ -8,7 +8,7 @@ builder.Services.AddDbContext<ApiDbContext>(options =>
 
 var app = builder.Build();
 
-// Middleware de tratamento de exceções (Aula 14)
+// Middleware de tratamento de exceções
 app.UseExceptionHandler(errorApp =>
 {
     errorApp.Run(async context =>
@@ -25,8 +25,6 @@ app.UseExceptionHandler(errorApp =>
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-
-app.MapGet("/", () => "API de Itens do Fortnite está no ar!");
 
 app.MapGet("/api/itens", async (ApiDbContext db) =>
     await db.Itens.ToListAsync());
