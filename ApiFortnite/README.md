@@ -73,5 +73,5 @@ A Collection do Bruno está na pasta `bruno/` do projeto. Ela contém as requisi
 ## Observação sobre os dados
 O banco SQLite é armazenado em um arquivo local (`.db`). Em uma instalação nova, execute `dotnet ef database update` para criar o banco e aplicar as migrations existentes. O arquivo local do banco **não é versionado** no Git.
 
-## Vídeo de demonstração — AP2
-https://youtu.be/Cr5pAXUJWlg
+## Vídeo de demonstração — AS
+https://youtu.be/zCx7PRbVK64
